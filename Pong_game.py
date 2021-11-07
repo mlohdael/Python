@@ -1,171 +1,128 @@
-import turtle
+# Pong Game in Codeskulptor
 
-# Create screen
-from turtle import Turtle
+import random
 
-sc = turtle.Screen()
-sc.title("Pong game")
-sc.bgcolor("white")
-sc.setup(width=1000, height=600)
+import simplegui
 
-# Left paddle
-left_pad = turtle.Turtle()
-left_pad.speed(0)
-left_pad.shape("square")
-left_pad.color("black")
-left_pad.shapesize(stretch_wid=6, stretch_len=2)
-left_pad.penup()
-left_pad.goto(-400, 0)
-
-# Right paddle
-right_pad = turtle.Turtle()
-right_pad.speed(0)
-right_pad.shape("square")
-right_pad.color("black")
-right_pad.shapesize(stretch_wid=6, stretch_len=2)
-right_pad.penup()
-right_pad.goto(400, 0)
-
-# Ball of circle shape
-hit_ball = turtle.Turtle()
-hit_ball.speed(40)
-hit_ball.shape("circle")
-hit_ball.color("blue")
-hit_ball.penup()
-hit_ball.goto(0, 0)
-hit_ball.dx = 5
-hit_ball.dy = -5
-
-# Create screen
-sc = turtle.Screen()
-sc.title("Pong game")
-sc.bgcolor("white")
-sc.setup(width=1000, height=600)
-
-# Left paddle
-left_pad = turtle.Turtle()
-left_pad.speed(0)
-left_pad.shape("square")
-left_pad.color("black")
-left_pad.shapesize(stretch_wid=6, stretch_len=2)
-left_pad.penup()
-left_pad.goto(-400, 0)
-
-# Right paddle
-right_pad = turtle.Turtle()
-right_pad.speed(0)
-right_pad.shape("square")
-right_pad.color("black")
-right_pad.shapesize(stretch_wid=6, stretch_len=2)
-right_pad.penup()
-right_pad.goto(400, 0)
-
-# Ball of circle shape
-hit_ball: Turtle = turtle.Turtle()
-hit_ball.speed(40)
-hit_ball.shape("circle")
-hit_ball.color("blue")
-hit_ball.penup()
-hit_ball.goto(0, 0)
-hit_ball.dx = 5
-hit_ball.dy = -5
-
-# Initialize the score
-left_player = 0
-right_player = 0
-
-# Displays the score
-sketch = turtle.Turtle()
-sketch.speed(0)
-sketch.color("blue")
-sketch.penup()
-sketch.hideturtle()
-sketch.goto(0, 260)
-sketch.write(
-    "Left_player : 0    Right_player: 0", align="center", font=("Courier", 24, "normal")
-)
+WIDTH = 600
+HEIGHT = 400
+BALL_RADIUS = 20
+PAD_WIDTH = 8
+PAD_HEIGHT = 80
+HALF_PAD_WIDTH = PAD_WIDTH / 2
+HALF_PAD_HEIGHT = PAD_HEIGHT / 2
+LEFT = False
+RIGHT = True
+score1 = 0
+score2 = 0
+paddle1_pos = 0
+paddle2_pos = 0
+paddle1_vel = 0
+paddle2_vel = 0
 
 
-# Functions to move paddle vertically
-def paddleaup():
-    y = left_pad.ycor()
-    y += 20
-    left_pad.sety(y)
+def spawn_ball(direction):
+    global ball_pos, ball_vel  # these are vectors stored as lists
+    ball_pos = [WIDTH / 2, HEIGHT / 2]
+    if direction == RIGHT:
+        ball_vel = [random.randrange(120, 240) / 60, random.randrange(60, 180) / 60]
+    elif direction == LEFT:
+        ball_vel = [-random.randrange(120, 240) / 60, random.randrange(60, 180) / 60]
 
 
-def paddleadown():
-    y = left_pad.ycor()
-    y -= 20
-    left_pad.sety(y)
+def reset():
+    global ball_pos, score1, score2
+    ball_pos = [WIDTH / 2, HEIGHT / 2]
+    score1 = 0
+    score2 = 0
 
 
-def paddlebup():
-    y = right_pad.ycor()
-    y += 20
-    right_pad.sety(y)
+def new_game():
+    global paddle1_pos, paddle2_pos, paddle1_vel, paddle2_vel
+    global score1, score2
+    reset()
+    spawn_ball(RIGHT)
 
 
-def paddlebdown():
-    y = right_pad.ycor()
-    y -= 20
-    right_pad.sety(y)
+def draw(canvas):
+    global paddle1_pos, paddle2_pos, ball_pos, ball_vel, paddle1_vel, paddle2_vel, BALL_RADIUS
+    global score1, score2
+
+    canvas.draw_line([WIDTH / 2, 0], [WIDTH / 2, HEIGHT], 1, "White")
+    canvas.draw_line([PAD_WIDTH, 0], [PAD_WIDTH, HEIGHT], 1, "White")
+    canvas.draw_line([WIDTH - PAD_WIDTH, 0], [WIDTH - PAD_WIDTH, HEIGHT], 1, "White")
+
+    ball_pos[0] += ball_vel[0]
+    ball_pos[1] += ball_vel[1]
+
+    if ball_pos[0] <= BALL_RADIUS + PAD_WIDTH or ball_pos[0] >= WIDTH - BALL_RADIUS - PAD_WIDTH:
+        ball_vel[0] = -ball_vel[0]
+    elif ball_pos[1] <= BALL_RADIUS + PAD_WIDTH or ball_pos[1] >= HEIGHT - BALL_RADIUS - PAD_WIDTH:
+        ball_vel[1] = -ball_vel[1]
+
+    canvas.draw_circle(ball_pos, BALL_RADIUS, 1, "White", "White")
+
+    paddle1_pos += paddle1_vel
+    paddle2_pos += paddle2_vel
+
+    if paddle1_pos <= -HEIGHT / 2 + PAD_HEIGHT / 2:
+        paddle1_pos = -HEIGHT / 2 + PAD_HEIGHT / 2
+    elif paddle1_pos >= HEIGHT / 2 - PAD_HEIGHT / 2:
+        paddle1_pos = HEIGHT / 2 - PAD_HEIGHT / 2
+
+    if paddle2_pos <= -HEIGHT / 2 + PAD_HEIGHT / 2:
+        paddle2_pos = -HEIGHT / 2 + PAD_HEIGHT / 2
+    elif paddle2_pos >= HEIGHT / 2 - PAD_HEIGHT / 2:
+        paddle2_pos = HEIGHT / 2 - PAD_HEIGHT / 2
+
+    canvas.draw_line([PAD_WIDTH / 2, paddle1_pos + HEIGHT / 2 - PAD_HEIGHT / 2],
+                     [PAD_WIDTH / 2, paddle1_pos + PAD_HEIGHT / 2 + HEIGHT / 2], 10, "White")
+    canvas.draw_line([WIDTH - PAD_WIDTH / 2, paddle2_pos + HEIGHT / 2 - PAD_HEIGHT / 2],
+                     [WIDTH - PAD_WIDTH / 2, PAD_HEIGHT / 2 + paddle2_pos + HEIGHT / 2], 10, "White")
+
+    if (ball_pos[1] <= (paddle1_pos + HEIGHT / 2 - PAD_HEIGHT / 2) or ball_pos[1] >= (
+            paddle1_pos + PAD_HEIGHT / 2 + HEIGHT / 2)) and ball_pos[0] == (PAD_WIDTH + BALL_RADIUS):
+        score2 += 1
+    else:
+        pass
+
+    if (ball_pos[1] <= (paddle2_pos + HEIGHT / 2 - PAD_HEIGHT / 2) or ball_pos[1] >= (
+            paddle2_pos + PAD_HEIGHT / 2 + HEIGHT / 2)) and ball_pos[0] == (WIDTH - PAD_WIDTH - BALL_RADIUS):
+        score1 += 1
+    else:
+        pass
+
+    canvas.draw_text(str(score1), (250, 30), 40, "White")
+    canvas.draw_text(str(score2), (330, 30), 40, "White")
 
 
-# Keyboard bindings
-sc.listen()
-sc.onkeypress(paddleaup, "e")
-sc.onkeypress(paddleadown, "x")
-sc.onkeypress(paddlebup, "Up")
-sc.onkeypress(paddlebdown, "Down")
+def keydown(key):
+    global paddle1_vel, paddle2_vel
+    if key == simplegui.KEY_MAP["down"]:
+        paddle1_vel = 2
+    elif key == simplegui.KEY_MAP["up"]:
+        paddle1_vel = -2
 
-while True:
-    sc.update()
+    if key == simplegui.KEY_MAP["w"]:
+        paddle2_vel = -2
+    elif key == simplegui.KEY_MAP["s"]:
+        paddle2_vel = 2
 
-    hit_ball.setx(hit_ball.xcor() + hit_ball.dx)
-    hit_ball.sety(hit_ball.ycor() + hit_ball.dy)
 
-    # Checking borders
-    if hit_ball.ycor() > 280:
-        hit_ball.sety(280)
-        hit_ball.dy *= -1
+def keyup(key):
+    global paddle1_vel, paddle2_vel
+    if key == simplegui.KEY_MAP["down"] or key == simplegui.KEY_MAP["up"]:
+        paddle1_vel = 0
+    if key == simplegui.KEY_MAP["w"] or key == simplegui.KEY_MAP["s"]:
+        paddle2_vel = 0
 
-    if hit_ball.ycor() < -280:
-        hit_ball.sety(-280)
-        hit_ball.dy *= -1
 
-    if hit_ball.xcor() > 500:
-        hit_ball.goto(0, 0)
-        hit_ball.dy *= -1
-        left_player += 1
-        sketch.clear()
-        sketch.write(
-            "Left_player : {}    Right_player: {}".format(left_player, right_player),
-            align="center",
-            font=("Courier", 24, "normal"),
-        )
+frame = simplegui.create_frame("Pong", WIDTH, HEIGHT)
+frame.set_draw_handler(draw)
+frame.set_keydown_handler(keydown)
+frame.set_keyup_handler(keyup)
+frame.add_button("Restart", reset)
 
-    if hit_ball.xcor() < -500:
-        hit_ball.goto(0, 0)
-        hit_ball.dy *= -1
-        right_player += 1
-        sketch.clear()
-        sketch.write(
-            "Left_player : {}    Right_player: {}".format(left_player, right_player),
-            align="center",
-            font=("Courier", 24, "normal"),
-        )
-
-    # Paddle ball collision
-    if (hit_ball.xcor() > 360 and hit_ball.xcor() < 370) and (
-        hit_ball.ycor() < right_pad.ycor() + 40
-        and hit_ball.ycor() > right_pad.ycor() - 40
-    ):
-        hit_ball.setx(360)
-        hit_ball.dx *= -1
-
-    if (hit_ball.xcor() < -360 and hit_ball.xcor() > -370) and (
-        hit_ball.ycor() < left_pad.ycor() + 40
-        and hit_ball.ycor() > left_pad.ycor() - 40
-    ):
-        hit_ball.setx(-360)
-        hit_ball.dx *= -1
+new_game()
+print()
+frame.start()
